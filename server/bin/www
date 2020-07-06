@@ -1,0 +1,26 @@
+#!/usr/bin/env node
+var debug = require('debug')('server');
+var app = require('../app');
+
+app.set('port', process.env.PORT || 3000); //change from 3000 to work locally to match client
+
+var server = app.listen(app.get('port'), function() {
+  debug('Express server listening on port ' + server.address().port);
+});
+
+var io = require("socket.io").listen(server);
+
+io.on("connection", function(socket){
+  console.log("Client Connected");
+
+  socket.on("stateChanged", function(state){
+    console.log("State Changed: " + state);
+    io.emit("updateState", state); // submits change to pi client
+  });
+
+   socket.on("buttonpress", function(button){
+     console.log("Button press: " + button); //see change in server console
+	
+    io.emit("updatevirtualButton", button); // submits change to listening html client
+   });
+});
